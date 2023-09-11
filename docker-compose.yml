@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+  sqlserver:
+    container_name: sql_server_container
+    image: mcr.microsoft.com/mssql/server:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "XP-inc-customer-2023"
+    volumes:
+       - sqlserver:/var/opt/mssql
+    ports:
+      - "1433:1433"
+    networks:
+      - my-network
+    restart: unless-stopped
+
+  xp-inc-application:
+    container_name: xp_container
+    build: .
+    image: xp-inc-application:latest
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=XpInc2023;User Id=sa;Password=XP-inc-customer-2023;"
+    depends_on:
+      - sqlserver
+    ports:
+      - "5000:80"
+    networks:
+      - my-network
+    restart: unless-stopped
+
+networks:
+  my-network:
+    driver: bridge
+
+volumes:
+    sqlserver:
